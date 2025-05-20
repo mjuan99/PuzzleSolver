@@ -23,12 +23,14 @@ class RubiksCubeMLPModel(Model):
       'G': 5
     }
 
+  # one-hot encodes a rubkis cube state
   def encode_state(self, state):
     one_hot = np.zeros((54, 6), dtype=np.float32)
     for i, sticker in enumerate(state):
       one_hot[i, self.color_map[sticker]] = 1.0
     return one_hot.flatten()
 
+  # Upsamples to balance the training data, as there are fewer states closer to the final state
   @staticmethod
   def upsample_levels(states):
       # Step 1: Group states by level
@@ -79,7 +81,7 @@ class RubiksCubeMLPModel(Model):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
 
-    num_epochs = 20  # You can increase this
+    num_epochs = 7
 
     for epoch in range(num_epochs):
         self.model.train()
@@ -162,7 +164,7 @@ class HeuristicMLP(nn.Module):
 class PuzzleDataset(Dataset):
     def __init__(self, X, y):
         self.X = torch.tensor(X, dtype=torch.float32)
-        self.y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)  # shape (N, 1)
+        self.y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
 
     def __len__(self):
         return len(self.X)

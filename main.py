@@ -5,7 +5,7 @@ from rubiks_MLP_model import RubiksCubeMLPModel
 
 
 read_states_from_file = False
-write_states_to_file = True
+write_states_to_file = False
 states_file_path = 'level_states.pkl'
 read_model_from_file = False
 write_model_to_file = False
@@ -23,7 +23,7 @@ else:
   solver = PuzzleSolver(rubiks_cube_puzzle, rubiks_cube_model)
   if read_states_from_file:
     states = read_from_file(states_file_path)
-    solver.states = states
+    solver.set_states(states)
   else:
     solver.generate_states(max_level_size=20000)
     if write_states_to_file:
