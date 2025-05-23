@@ -9,9 +9,9 @@ import random
 from collections import defaultdict
 import numpy as np
 
-from model_interface import Model
+from src.models.model_interface import Model
 
-class RubiksCubeMLPModel(Model):
+class RubiksCubeBasicMLPModel(Model):
 
   def __init__(self):
     self.color_map = {
@@ -58,7 +58,7 @@ class RubiksCubeMLPModel(Model):
       return balanced_states
 
   def train_model(self, states):
-    states = RubiksCubeMLPModel.upsample_levels(states)
+    states = RubiksCubeBasicMLPModel.upsample_levels(states)
     self.X = []
     self.y = []
     for state, level in states:
@@ -149,11 +149,9 @@ class HeuristicMLP(nn.Module):
     def __init__(self):
         super(HeuristicMLP, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(54 * 6, 512),  # input layer
+            nn.Linear(54 * 6, 256),  # input layer
             nn.ReLU(),
-            nn.Linear(512, 256),     # first hidden layer
-            nn.ReLU(),
-            nn.Linear(256, 128),     # second hidden layer
+            nn.Linear(256, 128),     # hidden layer
             nn.ReLU(),
             nn.Linear(128, 1)        # output: predicted distance
         )

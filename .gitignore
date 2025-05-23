@@ -1,5 +1,7 @@
 venv/
+pkls/
 __pycache__/
 *.pyc
 .DS_Store
 *.pkl
+notes.txt

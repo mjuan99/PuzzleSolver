@@ -1,8 +1,10 @@
 import heapq
 import random
+import time
+from collections import deque
 
 class PuzzleSolver:
-  def __init__(self, puzzle, model):
+  def __init__(self, puzzle, model=None):
     self.puzzle = puzzle
     self.model = model
 
@@ -15,7 +17,7 @@ class PuzzleSolver:
   # Returns a list of pairs (state, distance) generating a tree starting from the final state
   # and applying the available movements repeteadly to each state in each level.
   # max_level_size and max_depth control the growth of the states tree
-  def generate_states(self, max_depth=20, max_level_size=5000, visited_check=True, verbose=True):
+  def generate_states(self, max_depth=10, max_level_size=5000, visited_check=True, verbose=True):
     final_state = self.puzzle.new_puzzle()
     level_states = {0: [(final_state, [])]}  # Level 0 contains only the final state
 
@@ -73,7 +75,9 @@ class PuzzleSolver:
     self.model.evaluate_model()
 
   # Applies the A* algorithm to solve the puzzle, using the model as herustic function
-  def solve(self, start_state, max_depth=10):
+  def solve(self, start_state, max_depth=0):
+    start_time = time.time()
+
     final_state = self.puzzle.new_puzzle()
     best_cost = {}
 
@@ -89,7 +93,7 @@ class PuzzleSolver:
 
       # Goal check
       if node.state == final_state:
-        return node.move_sequence, len(best_cost)
+        return node.move_sequence, len(best_cost), time.time() - start_time
 
       # Depth limit check
       if (max_depth > 0 and node.g >= max_depth):
@@ -110,8 +114,34 @@ class PuzzleSolver:
         child_node.f = child_node.g + child_node.h
         heapq.heappush(queue, child_node)
 
-    return None, len(best_cost)  # no solution found within depth limit
+    return None, len(best_cost), time.time() - start_time  # no solution found within depth limit
 
+  def bfs_solve(self, start_state, max_depth=0):
+    start_time = time.time()
+    final_state = self.puzzle.new_puzzle()
+    visited = set()
+    queue = deque()
+    queue.append((start_state, []))
+    visited.add(start_state)
+
+    while queue:
+        state, path = queue.popleft()
+
+        if state == final_state:  # goal
+            return path, len(visited), time.time() - start_time
+
+        if (max_depth > 0) and (len(path) >= max_depth):
+            continue
+
+        for movement in self.puzzle.get_movements():
+            if not self.puzzle.is_redundant(path, movement):
+                new_state = self.puzzle.apply_movement(state, movement)
+
+                if new_state not in visited:
+                    visited.add(new_state)
+                    queue.append((new_state, path + [movement]))
+
+    return None, len(visited), time.time() - start_time
 
 
 class Node:
@@ -125,3 +155,6 @@ class Node:
     # Required for heapq to compare nodes
     def __lt__(self, other):
         return self.f < other.f
+    
+
+
