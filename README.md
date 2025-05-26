@@ -11,9 +11,9 @@ A machine learning–augmented puzzle solver that learns how to solve any* puzzl
 
 ## 🧩 Overview
 
-This project presents an **experimental puzzle solver** that combines machine learning and A* search to solve puzzles.
+This project presents an **experimental puzzle solver** that combines machine learning and A* search to solve puzzles with minimum knowledge of the puzzle mechanics.
 
-The key idea is to automatically generate a dataset of puzzle states and their respective distance to the final (solved) state. Then train a model that can estimate the distance from any puzzle state to the final state. Finally, This model is used as a heuristic in the A* algorithm, allowing it to efficiently find solutions to new, unseen configurations.
+The key idea is for the Puzzle Solver to learn by exploring any puzzle's state space, starting from the known final state and using only the available set of valid movements. Then, the puzzle knowledge gained by exploring the state space will be used alongside the A* search algorithm to solve new, unseen configurations.
 
 ---
 
@@ -28,6 +28,10 @@ To be solvable by this system, a puzzle must satisfy the following constraints:
 ---
 
 ## ⚙️ How It Works
+The Puzzle Solver architecture can be divided in two stages: the Learning Stage and the Solving Stage. The first step in the Learning Stage is the States Generation, where the Puzzle Solver takes as input the Puzzle definition (final stage and valid momvents) and some generation restrictions (max depth and max level size) and it starts exploring the state space starting from the final state and moving level by level with the available movements (level = distance to the final state), the output is a list of pairs (state, distance_to_final_state). Then, the next step in the Learning Stage is the Model Training, here a Machine Learning Model is trained to predict the distance of any unsolved state to the final state. Finally, in the Solving Stage, the trained Model is used as Heuristic in the A* alogrithm to efficiently find solutions to any unsolved state.
+
+![Puzzle Solver Diagram](images/puzzle_solver_diagram.png)
+
 
 1. **State Generation:**
    Starting from the solved state, the system generates a subset of all the valid states by applying random valid moves, keeping track of how many steps away each state is from the goal.
