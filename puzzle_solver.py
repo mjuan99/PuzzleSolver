@@ -1,7 +1,7 @@
 import heapq
 import random
 import time
-from collections import deque
+from collections import deque, defaultdict
 
 class PuzzleSolver:
   def __init__(self, puzzle, model=None):
@@ -17,7 +17,7 @@ class PuzzleSolver:
   # Returns a list of pairs (state, distance) generating a tree starting from the final state
   # and applying the available movements repeteadly to each state in each level.
   # max_level_size and max_depth control the growth of the states tree
-  def generate_states(self, max_depth=10, max_level_size=5000, visited_check=True, verbose=True):
+  def generate_states(self, max_depth=10, max_level_size=5000, upsample_levels=True, balance_levels_to=0, visited_check=True, verbose=True):
     final_state = self.puzzle.new_puzzle()
     level_states = {0: [(final_state, [])]}  # Level 0 contains only the final state
 
@@ -26,7 +26,8 @@ class PuzzleSolver:
       visited.add(final_state)
 
     # For each level generate all the possible states (not already generated) at one movement from the current level states
-    for level in range(1, max_depth + 1):
+    level = 1
+    while len(level_states[level - 1]) > 0 and not ((max_depth > 0) and ((level > max_depth))):
       if verbose:
         print(f"> Generating level {level}...")
 
@@ -51,12 +52,14 @@ class PuzzleSolver:
             level_states[level].append((new_state, movements_list + [movement]))
 
       # If level exceeds max level size, sample from the next level (could be stopped before but this way adds randomness)
-      if len(level_states[level]) > max_level_size:
+      if (max_level_size > 0) and (len(level_states[level]) > max_level_size):
         level_states[level] = random.sample(level_states[level], max_level_size)
 
       if verbose:
         print(f"> Level size: {len(level_states[level])}")
         print()
+      
+      level += 1
 
     self.level_states_movements = level_states
 
@@ -66,6 +69,53 @@ class PuzzleSolver:
         flattened_states.append((state, level))
     self.states = flattened_states
 
+    if upsample_levels:
+      self.states = self.upsample_levels()
+    else:
+      if balance_levels_to > 0:
+        self.states = self.balance_levels(balance_levels_to)
+
+    return self.states
+  
+  
+  def upsample_levels(self):
+    level_to_states = defaultdict(list)
+    for state, level in self.states:
+      level_to_states[level].append((state, level))
+
+    max_count = max(len(samples) for samples in level_to_states.values())
+
+    balanced_states = []
+    for level, samples in level_to_states.items():
+      if len(samples) < max_count:
+        needed = max_count - len(samples)
+        samples_to_add = random.choices(samples, k=needed)
+        samples.extend(samples_to_add)
+
+      balanced_states.extend(samples)
+
+    random.shuffle(balanced_states)
+    self.states = balanced_states
+    return self.states
+  
+  def balance_levels(self, level_size):
+    level_to_states = defaultdict(list)
+    for state, level in self.states:
+      level_to_states[level].append((state, level))
+
+    balanced_states = []
+    for level, samples in level_to_states.items():
+      if len(samples) < level_size:
+        needed = level_size - len(samples)
+        samples_to_add = random.choices(samples, k=needed)
+        samples.extend(samples_to_add)
+      else:
+        samples = random.sample(samples, level_size)
+
+      balanced_states.extend(samples)
+
+    random.shuffle(balanced_states)
+    self.states = balanced_states
     return self.states
 
   def train_model(self):

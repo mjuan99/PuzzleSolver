@@ -11,7 +11,7 @@ import numpy as np
 
 from src.models.model_interface import Model
 
-class RubiksCubeMLPModel(Model):
+class Rubiks222CubeMLPModel(Model):
 
   def __init__(self):
     self.color_map = {
@@ -25,7 +25,7 @@ class RubiksCubeMLPModel(Model):
 
   # one-hot encodes a rubkis cube state
   def encode_state(self, state):
-    one_hot = np.zeros((54, 6), dtype=np.float32)
+    one_hot = np.zeros((24, 6), dtype=np.float32)
     for i, sticker in enumerate(state):
       one_hot[i, self.color_map[sticker]] = 1.0
     return one_hot.flatten()
@@ -58,7 +58,7 @@ class RubiksCubeMLPModel(Model):
       return balanced_states
 
   def train_model(self, states):
-    states = RubiksCubeMLPModel.upsample_levels(states)
+    #states = Rubiks222CubeMLPModel.upsample_levels(states)
     self.X = []
     self.y = []
     for state, level in states:
@@ -67,6 +67,8 @@ class RubiksCubeMLPModel(Model):
 
     X_train, X_temp, y_train, y_temp = train_test_split(self.X, self.y, stratify=self.y, test_size=0.3)
     X_val, X_test, y_val, self.y_test = train_test_split(X_temp, y_temp, stratify=y_temp, test_size=0.5)
+    #X_train, X_temp, y_train, y_temp = train_test_split(self.X, self.y, test_size=0.3)
+    #X_val, X_test, y_val, self.y_test = train_test_split(X_temp, y_temp, test_size=0.5)
 
     # Create datasets
     train_dataset = PuzzleDataset(X_train, y_train)
@@ -81,7 +83,7 @@ class RubiksCubeMLPModel(Model):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
 
-    num_epochs = 7
+    num_epochs = 10
 
     for epoch in range(num_epochs):
         self.model.train()
@@ -143,13 +145,16 @@ class RubiksCubeMLPModel(Model):
     with torch.no_grad():
         prediction = self.model(tensor_input).item()
     return prediction
+  
+  def drop_data(self):
+     self.X = self.y = self.y_test = self.test_dataset = None
 
 
 class HeuristicMLP(nn.Module):
     def __init__(self):
         super(HeuristicMLP, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(54 * 6, 512),  # input layer
+            nn.Linear(24 * 6, 512),  # input layer
             nn.ReLU(),
             nn.Linear(512, 256),     # first hidden layer
             nn.ReLU(),
