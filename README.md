@@ -5,7 +5,7 @@
 
 # Heuristic Model A* Puzzle Solver
 
-A machine learning–augmented puzzle solver that learns how to solve any* puzzle by training a heuristic function from the final state alone.
+A machine learning–augmented puzzle solver that learns how to solve any* puzzle by exploring the puzzle's state space knowing only the final state and the available movements.
 
 ---
 
@@ -48,15 +48,23 @@ The next image pictures what the State Generation output would look like applied
 
 ![Rubik's Cube States Generation Diagram](images/rubiks_states_generation.png)
 
-It's important to note that if the States Generation process doesn't explore every state in the state space it's possible that a state skipped in a level near the final state is found later and considered to be further away than it actually is, producing inaccurate data for the Model Training step and potentially degrading the performance of the Puzzle Solver. For that reason, the Puzzle interface (that any puzzle should implement) defines an abstract function `is_redundant(prev_movements, movement)` that allows the Puzzle Solver to avoid movements that would reduce the distance to the final state instead of incrementing it. A correct and robust implementation of this function can be challenging and require strong knowledge of the puzzle, but nevertheless a simple implementation can also help get a cleaner and more accurate states dataset.
+It's important to note that if the States Generation process doesn't explore every state in the state space it's possible that a state skipped in a level near the final state is found later and considered to be further away than it actually is, producing inaccurate data for the Model Training step and potentially degrading the performance of the Puzzle Solver. For that reason, the Puzzle interface (that any puzzle should implement) defines an abstract function `is_redundant(prev_movements, movement)` that allows the Puzzle Solver to avoid movements that would reduce the distance to the final state instead of increasing it. A correct and robust implementation of this function can be challenging and require strong knowledge of the puzzle, but nevertheless a simple implementation can also help get a cleaner and more accurate states dataset.
 
 ### 2. Model Training
 In this step a machine learning model is trained, using the output from the previous step, to predict the number of movements from any state to the final state. The model selection and configuration along with the evaluation is crucial to produce an effective and efficient Puzzle Solver. During testing XGBoost, MLP and CNN models were mainly used to predict distances from any state to the final state. Also some dummy models were implemented for quick testing and comparison, including BFSModel (always returns 0, making the A* algorithm equivalent to BFS search), RandomModel (returns a random value) and RandomNormalModel (returns a random normally distributed value).
+
+Note that if the model perfectly predicts the distance from any state to the final state, the A* algorithm will be able to find the optimal solution very quickly, without visiting any state that isn't in the optimal path to the solved state. Nevertheless a good enough model with some wrong predictions can also be used to efficiently find soultions, although the solution is not guaranteed to be optimal.
 
 ![Heuristic Predictions Diagram](images/heuristic_predictions.png)
 
 ### 3. A* Search:
 When solving a new puzzle configuration, the trained model is used as the heuristic function (`h(n)`) for A*, guiding the search efficiently.
+
+A* is a graph traversal and pathfinding algorithm that finds the path from a start state to a goal by combining the actual cost to reach a node and a heuristic estimate of the remaining cost. At each step, it selects the state with the lowest estimated total cost.
+
+The next image shows a simplified diagram of how the A* algorithm would work solving a Rubik's Cube with a perfect heuristic function (it always return the exact amount of moves needed to solve any state). Starting from the initial state, it has cost 0 (it didn't need any movement to get to that state), heuristic 4 (the heuristic function predicts that state can be solved in 4 movements) and total 4 (adding the cost and the heuristic to estimate how many movements would be needed to solve the puzzle). Then all the neighbors are generated, applying every possible movement to the current state, and calculating their cost, heuristic and total (in the image we are only seeing 3 neighbors for each visited state but in this case there should be 18). Then the state with the smaller total (without considering already visited oned) is selected and the process repeats, generating all the neighbors and calculating their values. In this case the next selected state has cost 1 (it's 1 movement away from the initial state), heuristic 3 (can be solved in 3 movements) and total 4 (solving the cube passing through that state is predicted to take 4 movements). The process is repeated until finding the goal (final state) and the solution is the path (movements) from the initial state to the goal. Notice that as the heuristic function is perfect the algorithm always choose a state in the optimal path to the goal (states where total = 4) because any other path would increment the total (incrementing the cost to get to that state without decreasing the heuristic) and therefore won't be chosen by the algorithm. Also notice that every displayed state outside the path to the goal has a total of 6, that makes sense because they are all one wrong movement away from the optimal path, so their total is 4 (best solution) + 1 (wrong movement) + 1 (undoing the wrong movement).
+
+![A* algorithm solving Rubik's cube](images/rubik_a_star.png)
 
 ---
 
