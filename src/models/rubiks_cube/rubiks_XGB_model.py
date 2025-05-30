@@ -5,10 +5,8 @@ from collections import defaultdict
 from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from src.models.model_interface import Model
+from models.model_interface import Model
 import numpy as np
-
-from src.models.model_interface import Model
 
 class RubiksCubeXGBModel(Model):
 

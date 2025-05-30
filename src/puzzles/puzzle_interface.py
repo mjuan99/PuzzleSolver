@@ -5,7 +5,7 @@ class Puzzle(ABC):
 
   # Creates a new puzzle state <movements> movements away from the final state
   @abstractmethod
-  def new_puzzle(self, movements=0):
+  def new_puzzle(self, total_movements=0):
     pass
 
   # Returns a new state as the result of applying <movement> to <state>

@@ -1,4 +1,4 @@
-from src.puzzles.puzzle_interface import Puzzle
+from puzzles.puzzle_interface import Puzzle
 import random
 
 # Rubiks Cube implementation

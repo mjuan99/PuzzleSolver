@@ -1,5 +1,5 @@
 from read_write_helper import read_from_file
-from src.puzzles.rubiks_cube_puzzle import RubiksCube
+from puzzles.rubiks_cube_puzzle import RubiksCube
 from puzzle_solver import PuzzleSolver
 
 

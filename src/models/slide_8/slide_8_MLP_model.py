@@ -11,58 +11,16 @@ import numpy as np
 
 from models.model_interface import Model
 
-class RubiksCubeMLPModel(Model):
+class Slide8MLPModel(Model):
 
   def __init__(self):
-    self.color_map = {
-      'Y': 0,
-      'R': 1,
-      'B': 2,
-      'W': 3,
-      'O': 4,
-      'G': 5
-    }
-
-  # one-hot encodes a rubkis cube state
-  def encode_state(self, state):
-    one_hot = np.zeros((54, 6), dtype=np.float32)
-    for i, sticker in enumerate(state):
-      one_hot[i, self.color_map[sticker]] = 1.0
-    return one_hot.flatten()
-
-  # Upsamples to balance the training data, as there are fewer states closer to the final state
-  @staticmethod
-  def upsample_levels(states):
-      # Step 1: Group states by level
-      level_to_states = defaultdict(list)
-      for state, level in states:
-          level_to_states[level].append((state, level))
-
-      # Step 2: Find max level count
-      max_count = max(len(samples) for samples in level_to_states.values())
-
-      # Step 3: Upsample each level to match max count
-      balanced_states = []
-      for level, samples in level_to_states.items():
-          if len(samples) < max_count:
-              # Sample with replacement to match count
-              needed = max_count - len(samples)
-              samples_to_add = random.choices(samples, k=needed)
-              samples.extend(samples_to_add)
-
-          balanced_states.extend(samples)
-
-      # Step 4: Shuffle to avoid blocks of same-level states
-      random.shuffle(balanced_states)
-
-      return balanced_states
+    pass
 
   def train_model(self, states):
-    states = RubiksCubeMLPModel.upsample_levels(states)
     self.X = []
     self.y = []
     for state, level in states:
-      self.X.append(self.encode_state(state))
+      self.X.append(state)
       self.y.append(level)
 
     X_train, X_temp, y_train, y_temp = train_test_split(self.X, self.y, stratify=self.y, test_size=0.3)
@@ -81,7 +39,7 @@ class RubiksCubeMLPModel(Model):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
 
-    num_epochs = 7
+    num_epochs = 10
 
     for epoch in range(num_epochs):
         self.model.train()
@@ -130,7 +88,7 @@ class RubiksCubeMLPModel(Model):
 
     plt.figure(figsize=(6, 6))
     plt.scatter(y_true, y_preds, alpha=0.2)
-    plt.plot([0, 20], [0, 20], '--', color='gray')
+    plt.plot([0, 31], [0, 31], '--', color='gray')
     plt.xlabel("True Distance")
     plt.ylabel("Predicted Distance")
     plt.title("Predicted vs True Distances")
@@ -138,8 +96,7 @@ class RubiksCubeMLPModel(Model):
     plt.show()
 
   def predict(self, state):
-    encoded = self.encode_state(state)
-    tensor_input = torch.tensor(encoded, dtype=torch.float32).unsqueeze(0).to(torch.device("cpu"))
+    tensor_input = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(torch.device("cpu"))
     with torch.no_grad():
         prediction = self.model(tensor_input).item()
     return prediction
@@ -149,11 +106,11 @@ class HeuristicMLP(nn.Module):
     def __init__(self):
         super(HeuristicMLP, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(54 * 6, 512),  # input layer
+            nn.Linear(9, 128),  # input layer
             nn.ReLU(),
-            nn.Linear(512, 256),     # first hidden layer
+            nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Linear(256, 128),     # second hidden layer
+            nn.Linear(256, 128),
             nn.ReLU(),
             nn.Linear(128, 1)        # output: predicted distance
         )

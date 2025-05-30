@@ -1,15 +1,18 @@
 from read_write_helper import write_to_file, read_from_file
-# from src.puzzles.rubiks_cube_puzzle import RubiksCube
-from src.puzzles.rubiks_222_cube_puzzle import Rubiks222Cube
-from src.models.r222_cube.r222_MLP_model import Rubiks222CubeMLPModel
-from src.models.random_model import RandomModel
-from src.models.random_normal_model import RandomNormalModel
-from src.models.bfs_model import BFSModel
+# from puzzles.rubiks_cube_puzzle import RubiksCube
+from puzzles.rubiks_222_cube_puzzle import Rubiks222Cube
+from puzzles.slide_15_puzzle import Slide15Puzzle
+from puzzles.slide_8_puzzle import Slide8Puzzle
+from models.r222_cube.r222_MLP_model import Rubiks222CubeMLPModel
+from models.slide_8.slide_8_MLP_model import Slide8MLPModel
+from models.random_model import RandomModel
+from models.random_normal_model import RandomNormalModel
+from models.bfs_model import BFSModel
 from puzzle_solver import PuzzleSolver
-# from src.models.rubiks_cube.rubiks_MLP_model import RubiksCubeMLPModel
-# from src.models.rubiks_cube.rubiks_basic_MLP_model import RubiksCubeBasicMLPModel
-# from src.models.rubiks_cube.rubiks_XGB_model import RubiksCubeXGBModel
-# from src.models.rubiks_cube.rubiks_CNN_model import RubiksCubeCNNModel
+# from models.rubiks_cube.rubiks_MLP_model import RubiksCubeMLPModel
+# from models.rubiks_cube.rubiks_basic_MLP_model import RubiksCubeBasicMLPModel
+# from models.rubiks_cube.rubiks_XGB_model import RubiksCubeXGBModel
+# from models.rubiks_cube.rubiks_CNN_model import RubiksCubeCNNModel
 
 
 # p = Rubiks222Cube()
@@ -35,8 +38,26 @@ from puzzle_solver import PuzzleSolver
 
 
 
+p = Slide8Puzzle()
+m = Slide8MLPModel()
+solver = PuzzleSolver(p, m)
 
-# exit()
+solver.generate_states(max_depth=25, max_level_size=15000)
+solver.train_model()
+solver.evaluate_model()
+
+s = p.new_puzzle(total_movements=30)
+print(p.to_string(s))
+
+solution, visited_nodes, elapsed_time = solver.solve(s)
+print(f"HMA: Visited Nodes: {visited_nodes} - Elapsed Time: {elapsed_time:6.4f}s - Solution: {solution}")
+
+solution, visited_nodes, elapsed_time = solver.bfs_solve(s)
+print(f"BFS: Visited Nodes: {visited_nodes} - Elapsed Time: {elapsed_time:6.4f}s - Solution: {solution}")
+
+
+
+exit()
 
 
 

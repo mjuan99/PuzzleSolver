@@ -4,7 +4,7 @@ import torch.optim as optim
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from src.models.model_interface import Model  # Assuming Model is defined in model_interface.py
+from models.model_interface import Model  # Assuming Model is defined in model_interface.py
 import matplotlib.pyplot as plt
 import random
 from collections import defaultdict

@@ -9,7 +9,7 @@ import random
 from collections import defaultdict
 import numpy as np
 
-from src.models.model_interface import Model
+from models.model_interface import Model
 
 class Rubiks222CubeMLPModel(Model):
 

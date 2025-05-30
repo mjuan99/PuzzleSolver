@@ -1,4 +1,4 @@
-from src.models.model_interface import Model
+from models.model_interface import Model
 
 class BFSModel(Model):
   def train_model(self, states):

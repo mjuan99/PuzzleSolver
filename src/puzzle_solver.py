@@ -157,12 +157,13 @@ class PuzzleSolver:
 
       # Generate neighbor nodes
       for movement in self.puzzle.get_movements():
-        new_state = self.puzzle.apply_movement(node.state, movement)
+        if(self.puzzle.is_valid_movement(node.state, movement)):
+          new_state = self.puzzle.apply_movement(node.state, movement)
 
-        child_node = Node(new_state, g=node.g + 1, move_sequence=node.move_sequence + [movement])
-        child_node.h = self.model.predict(new_state)
-        child_node.f = child_node.g + child_node.h
-        heapq.heappush(queue, child_node)
+          child_node = Node(new_state, g=node.g + 1, move_sequence=node.move_sequence + [movement])
+          child_node.h = self.model.predict(new_state)
+          child_node.f = child_node.g + child_node.h
+          heapq.heappush(queue, child_node)
 
     return None, len(best_cost), time.time() - start_time  # no solution found within depth limit
 
@@ -184,7 +185,7 @@ class PuzzleSolver:
             continue
 
         for movement in self.puzzle.get_movements():
-            if not self.puzzle.is_redundant(path, movement):
+            if self.puzzle.is_valid_movement(state, movement) and not self.puzzle.is_redundant(path, movement):
                 new_state = self.puzzle.apply_movement(state, movement)
 
                 if new_state not in visited:

@@ -1,4 +1,4 @@
-from src.models.model_interface import Model
+from models.model_interface import Model
 import random
 
 class RandomModel(Model):
